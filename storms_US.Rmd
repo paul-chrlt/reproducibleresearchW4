@@ -1,0 +1,53 @@
+---
+title: "Characteristics of major storms and weather events in the United States"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+# ajouter le cache
+# retirer les output des librairies chargées
+library(dplyr)
+```
+
+## Abstract
+
+
+
+## Data processing
+
+First, we need to download and import the data
+
+```{r dataImport}
+download.file("https://d396qusza40orc.cloudfront.net/repdata%2Fdata%2FStormData.csv.bz2","stormData.csv.bz2")
+stormData <- read.csv("stormData.csv.bz2")
+str(stormData)
+```
+
+## Population health incidence
+
+Let's find which events are the most harmful considering the population health. We will order our data with the "INJURIES" variable. We will then aggregate the result to avoid the doubles.
+
+```{r harmfulInjuries}
+stormDataHarmfulInjuries <- aggregate(INJURIES~EVTYPE,stormData,sum)
+stormDataHarmfulInjuries <- stormDataHarmfulInjuries[order(-stormDataHarmfulInjuries$INJURIES),]
+head(stormDataHarmfulInjuries)
+```
+
+That might be interesting to compare it to "FATALITIES"
+
+```{r harmfulFatalities}
+stormDataHarmfulFatalities <- aggregate(FATALITIES~EVTYPE,stormData,sum)
+stormDataHarmfulFatalities <- stormDataHarmfulFatalities[order(-stormDataHarmfulFatalities$FATALITIES),]
+head(stormDataHarmfulFatalities)
+```
+
+## Economic incidence
+
+```{r economicConsequences}
+stormDataEcoConsequences <- aggregate(PROPDMG~EVTYPE,stormData,sum)
+stormDataHarmfulEcoConsequences <- stormDataEcoConsequences[order(-stormDataEcoConsequences$PROPDMG),]
+head(stormDataHarmfulEcoConsequences)
+```
+
+## Results
