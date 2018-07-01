@@ -6,7 +6,9 @@ output: html_document
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE,cache=TRUE)
 # retirer les output des librairies chargées
-# library(dplyr)
+library(plyr)
+library(ggplot2)
+library(reshape2)
 ```
 
 ## Abstract
@@ -38,13 +40,9 @@ stormData$CROPDMGEXP <- gsub("[^BbMmKk]","1",stormData$CROPDMGEXP)
 
 # replaceing the B M K with proper exposant operator
 for (i in 1:length(expvalues[,1])){
-        print(i)
         stormData$PROPDMGEXP <- gsub(expvalues[i,1],expvalues[i,2],stormData$PROPDMGEXP,ignore.case = TRUE)
         stormData$CROPDMGEXP <- gsub(expvalues[i,1],expvalues[i,2],stormData$CROPDMGEXP,ignore.case = TRUE)
 }
-
-# test only :
-head(stormData$PROPDMGEXP,100)
 
 # giving the numeric class and getting the final value
 stormData$PROPDMG <- as.numeric(stormData$PROPDMG)
@@ -74,12 +72,39 @@ stormDataHarmfulFatalities <- stormDataHarmfulFatalities[order(-stormDataHarmful
 head(stormDataHarmfulFatalities)
 ```
 
-## Economic incidence
+The most harmful event is the tornado, common for injuries and fatalities.
 
-```{r economicConsequences}
-stormDataEcoConsequences <- aggregate(PROPDMG~EVTYPE,stormData,sum)
-stormDataHarmfulEcoConsequences <- stormDataEcoConsequences[order(-stormDataEcoConsequences$PROPDMG),]
-head(stormDataHarmfulEcoConsequences)
+Let's compare the 5 most harmful fatalities and injuries events.
+```{r fatalitiesInjuriesComparison}
+topFatalities <- stormDataHarmfulFatalities[1:5,1]
+topInjuries <- stormDataHarmfulInjuries[1:5,1]
+topharmful <- c(as.character(topFatalities),as.character(topInjuries))
+healthimpact <- join(stormDataHarmfulFatalities,stormDataHarmfulInjuries)
+healthimpact$top <- healthimpact$EVTYPE %in% topharmful
+healthimpact <- subset(healthimpact,healthimpact$top==TRUE)
+healthimpact <- healthimpact[,1:3]
+healthimpact <- melt(healthimpact, id="EVTYPE")
+healthgraph <- ggplot(data=healthimpact,aes(EVTYPE,value)) + geom_point() + facet_grid(variable~.,scales="free")
+healthgraph
 ```
 
+## Economic incidence
+
+There is 2 kind of economic values : property and crop. We could compare them
+```{r economicConsequences}
+# property consequences
+stormDataEcoConsequencesproperty <- aggregate(PROPDMGVALUE~EVTYPE,stormData,sum)
+stormDataHarmfulEcoConsequencesproperty <- stormDataEcoConsequencesproperty[order(-stormDataEcoConsequencesproperty$PROPDMGVALUE),]
+head(stormDataHarmfulEcoConsequencesproperty)
+
+# crop consequences
+stormDataEcoConsequencescrop <- aggregate(CROPDMGVALUE~EVTYPE,stormData,sum)
+stormDataHarmfulEcoConsequencescrop <- stormDataEcoConsequencescrop[order(-stormDataEcoConsequencescrop$CROPDMGVALUE),]
+head(stormDataHarmfulEcoConsequencescrop)
+```
+
+The most economic incidence event is the flood.
+
 ## Results
+
+We saw that there is a slight difference between the health and economic consequences
