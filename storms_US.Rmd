@@ -4,10 +4,9 @@ output: html_document
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
-# ajouter le cache
+knitr::opts_chunk$set(echo = TRUE,cache=TRUE)
 # retirer les output des librairies chargées
-library(dplyr)
+# library(dplyr)
 ```
 
 ## Abstract
@@ -20,8 +19,41 @@ First, we need to download and import the data
 
 ```{r dataImport}
 download.file("https://d396qusza40orc.cloudfront.net/repdata%2Fdata%2FStormData.csv.bz2","stormData.csv.bz2")
-stormData <- read.csv("stormData.csv.bz2")
-str(stormData)
+importedstormData <- read.csv("stormData.csv.bz2")
+str(importedstormData)
+```
+
+The damage columns are not exploitable yet, because the exposant is in another column. We need to create columns with the final value, other values than B, M and K are not significant and can be ignored.
+
+```{r exponentialValuesCleaning}
+# preparing data to be cleaned
+stormData <- importedstormData
+expvalues <- cbind(c("[^BbMmKk]","B","M","K"),c(1,1e+09,1e+06,1e+03))
+stormData$PROPDMGEXP <- as.character(stormData$PROPDMGEXP)
+stormData$CROPDMGEXP <- as.character(stormData$CROPDMGEXP)
+
+# cleaning any other operator than B M K and replacing it with 1
+stormData$PROPDMGEXP <- gsub("[^BbMmKk]","1",stormData$PROPDMGEXP)
+stormData$CROPDMGEXP <- gsub("[^BbMmKk]","1",stormData$CROPDMGEXP)
+
+# replaceing the B M K with proper exposant operator
+for (i in 1:length(expvalues[,1])){
+        print(i)
+        stormData$PROPDMGEXP <- gsub(expvalues[i,1],expvalues[i,2],stormData$PROPDMGEXP,ignore.case = TRUE)
+        stormData$CROPDMGEXP <- gsub(expvalues[i,1],expvalues[i,2],stormData$CROPDMGEXP,ignore.case = TRUE)
+}
+
+# test only :
+head(stormData$PROPDMGEXP,100)
+
+# giving the numeric class and getting the final value
+stormData$PROPDMG <- as.numeric(stormData$PROPDMG)
+stormData$PROPDMGEXP <- as.numeric(stormData$PROPDMGEXP)
+stormData$PROPDMGVALUE <- stormData$PROPDMG * stormData$PROPDMGEXP
+
+stormData$CROPDMG <- as.numeric(stormData$CROPDMG)
+stormData$CROPDMGEXP <- as.numeric(stormData$CROPDMGEXP)
+stormData$CROPDMGVALUE <- stormData$CROPDMG * stormData$CROPDMGEXP
 ```
 
 ## Population health incidence
