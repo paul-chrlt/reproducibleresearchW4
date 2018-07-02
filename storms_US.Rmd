@@ -1,11 +1,10 @@
 ---
-title: "Characteristics of major storms and weather events in the United States"
+title: "Comparison of health and economic damages from storms and weather events in the United States"
 output: html_document
 ---
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE,cache=TRUE)
-# retirer les output des librairies chargées
 library(plyr)
 library(ggplot2)
 library(reshape2)
@@ -13,7 +12,10 @@ library(reshape2)
 
 ## Abstract
 
+The main objective is to compare how different the storm and weather events are considering health and economic perpesctives.
+We will analyse data from the National Oceanic & Atmospheric Administration. The data was released the 08/03/2007 and is available at http://www.nws.noaa.gov/directives/
 
+There is no easy way to create a unit to compare health and money. This study will focus on giving relative comparisons.
 
 ## Data processing
 
@@ -88,6 +90,8 @@ healthgraph <- ggplot(data=healthimpact,aes(EVTYPE,value)) + geom_point() + face
 healthgraph
 ```
 
+The tornado event is significantely the most harmful, whereas the other events seems to be more similar.
+
 ## Economic incidence
 
 There is 2 kind of economic values : property and crop. Using the processing we did, we can aggregate the datas
@@ -120,6 +124,12 @@ ecograph <- ggplot(stormEcoconsequences[1:5,],aes(EVTYPE,TOTALVALUE)) + geom_poi
 ecograph
 ```
 
+We can see the flood is significantly more harmful than the other events.
+
 ## Results
 
-We saw that there is a slight difference between the health and economic consequences. The most harmful consequence for health is tornados, whereas the event with the most economic incidence is the flood.
+For each kind of damage (health and economy), we observed that there is one particular event looking really more harmful than others.
+
+The most harmful consequence for health is tornados, whereas the event with the most economic incidence is the flood.
+
+Interesting fact : the most harmful event for health doesn't seem really harmful for economy, and conversely.
