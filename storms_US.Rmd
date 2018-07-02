@@ -90,21 +90,36 @@ healthgraph
 
 ## Economic incidence
 
-There is 2 kind of economic values : property and crop. We could compare them
+There is 2 kind of economic values : property and crop. Using the processing we did, we can aggregate the datas
 ```{r economicConsequences}
 # property consequences
 stormDataEcoConsequencesproperty <- aggregate(PROPDMGVALUE~EVTYPE,stormData,sum)
 stormDataHarmfulEcoConsequencesproperty <- stormDataEcoConsequencesproperty[order(-stormDataEcoConsequencesproperty$PROPDMGVALUE),]
-head(stormDataHarmfulEcoConsequencesproperty)
 
 # crop consequences
 stormDataEcoConsequencescrop <- aggregate(CROPDMGVALUE~EVTYPE,stormData,sum)
 stormDataHarmfulEcoConsequencescrop <- stormDataEcoConsequencescrop[order(-stormDataEcoConsequencescrop$CROPDMGVALUE),]
+
+# merge datas
+stormEcoconsequences <- join(stormDataHarmfulEcoConsequencesproperty,stormDataHarmfulEcoConsequencescrop)
+
+# compute the total value
+stormEcoconsequences$TOTALVALUE <- stormEcoconsequences$PROPDMGVALUE + stormEcoconsequences$CROPDMGVALUE
+stormEcoconsequences <- stormEcoconsequences [order(-stormEcoconsequences$TOTALVALUE),]
+
+# return the most economic incidences
 head(stormDataHarmfulEcoConsequencescrop)
+head(stormDataHarmfulEcoConsequencesproperty)
+head(stormEcoconsequences)
 ```
 
-The most economic incidence event is the flood.
+When combining both crop and property damages, the most economic incidence event is the flood.
+
+```{r ecograph}
+ecograph <- ggplot(stormEcoconsequences[1:5,],aes(EVTYPE,TOTALVALUE)) + geom_point()
+ecograph
+```
 
 ## Results
 
-We saw that there is a slight difference between the health and economic consequences
+We saw that there is a slight difference between the health and economic consequences. The most harmful consequence for health is tornados, whereas the event with the most economic incidence is the flood.
